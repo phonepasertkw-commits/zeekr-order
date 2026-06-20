@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ລະບົບຈອງລົດ ZEEKR - Advanced Configurator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Google Fonts (Noto Sans Lao) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans Lao', sans-serif;
+            background-color: #0b0c10;
+        }
+        .spin {
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .hero-preview-box {
+            min-height: 380px;
+        }
+        @media (min-width: 1024px) {
+            .hero-preview-box {
+                position: sticky;
+                top: 24px;
+                height: calc(100vh - 180px);
+                max-height: 650px;
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-300 min-h-screen">
+
+    <div id="app" class="pb-12">
+        <!-- Top Navbar -->
+        <header class="bg-[#111217] border-b border-gray-800 px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-6">
+                <div class="text-white font-bold text-2xl tracking-widest flex items-center gap-2">
+                    <span class="border-2 border-white p-1 text-xs font-black">Z</span> ZEEKR
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white">ລະບົບຈອງລົດ ZEEKR (Advanced Configurator)</h1>
+                    <p class="text-xs text-orange-500">ລັອກລະບົບຈົດຈຳຮູບພາບ ແລະ ຂໍ້ມູນອັດຕະໂນມັດ (ສາມາດເພີ່ມລຸ້ນລົດເອງໄດ້)</p>
+                </div>
+            </div>
+            <nav class="flex items-center gap-4 text-sm">
+                <button @click="resetToDefault" class="bg-red-950/40 text-red-400 border border-red-900/50 px-3 py-2 rounded text-xs hover:bg-red-900/30 transition">
+                    <i class="fa-solid fa-trash-can mr-1"></i> ລ້າງຂໍ້ມູນທັງໝົດ
+                </button>
+                <button @click="showAdmin = !showAdmin" class="bg-gray-800 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-gray-700 transition">
+                    <i class="fa-solid fa-gear" :class="{'spin': showAdmin}"></i> 
+                    {{ showAdmin ? 'ປິດຕັ້ງຄ່າລະບົບ' : 'ແຜງຕັ້ງຄ່າຂໍ້ມູນ ແລະ ຮູບພາບ (Admin Panel)' }}
+                </button>
+            </nav>
+        </header>
+
+        <!-- ແຜງຄວບຄຸມຫຼັງບ້ານ (Admin Backend) -->
+        <div v-if="showAdmin" class="bg-[#1a1c23] m-6 p-6 rounded-lg border border-orange-500/30 space-y-6 shadow-xl">
+            <div class="border-b border-gray-800 pb-3 flex justify-between items-center flex-wrap gap-2">
+                <div>
+                    <h3 class="text-orange-500 font-bold text-base"><i class="fa-solid fa-sliders mr-2"></i> ລະບົບຈັດການຂໍ້ມູນ ແລະ ຕົວເລືອກທັງໝົດ (Dynamic Management)</h3>
+                    <p class="text-xs text-gray-400 mt-1">ທຸກໆการປ່ຽນແປງ ຈະຖືກບັນທຶກໄວ້ໃນເຄື່ອງນີ້ອັດຕະໂນມັດ:</p>
+                </div>
+                <span class="text-xs bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1 rounded">
+                    <i class="fa-solid fa-floppy-disk mr-1"></i> Auto-Save Enabled
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+                <!-- 1. ຮູບພາບລຸ້ນລົດ -->
+                <div class="bg-[#111217] p-4 rounded border border-gray-800 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-orange-400 font-semibold"><i class="fa-solid fa-car mr-1"></i> 1. ຕັ້ງຄ່າລຸ້ນລົດ ແລະ ลາຄາພື້ນຖານ</span>
+                            <button @click="addNewCar" class="bg-orange-600 hover:bg-orange-700 text-white text-[11px] font-bold px-2 py-1 rounded transition">
+                                <i class="fa-solid fa-plus mr-1"></i> ເພີ່ມລຸ້ນລົດ
+                            </button>
+                        </div>
+                        <div class="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                            <div v-for="car in cars" :key="car.id" class="p-2 bg-black/20 rounded border border-gray-800/60 space-y-2">
+                                <div class="flex items-center justify-between gap-1">
+                                    <input type="text" v-model="car.name" @input="saveData" class="bg-[#1c1e24] border border-gray-700 text-xs text-white rounded p-1 w-[55%] font-bold">
+                                    <input type="number" v-model.number="car.basePrice" @input="saveData" class="bg-[#1c1e24] border border-gray-700 text-xs text-orange-400 rounded p-1 w-[35%] text-right font-bold">
+                                    <button @click="deleteCar(car.id)" class="text-red-500 hover:text-red-400 p-1 w-[10%] text-center" title="ລຶບລຸ້ນລົດນີ້">
+                                        <i class="fa-solid fa-trash text-xs"></i>
+                                    </button>
+                                </div>
+                                <div class="space-y-1">
+                                    <span class="text-[10px] text-gray-500 block">ອັບໂຫຼດຮູບລົດ (Thumbnail):</span>
+                                    <input type="file" @change="uploadCarImg($event, car.id)" class="text-[11px] text-gray-400 file:bg-gray-800 file:text-white file:border-0 file:py-0.5 file:px-2 file:rounded cursor-pointer w-full">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. ຈັດການສີພາຍນອກ -->
+                <div class="bg-[#111217] p-4 rounded border border-gray-800">
+                    <span class="text-orange-400 font-semibold block mb-3"><i class="fa-solid fa-palette mr-1"></i> 2. ຈັດการສີພາຍນອກ (5 ສີ ແກ້ໄຂເเองໄດ້)</span>
+                    <div class="space-y-3">
+                        <div v-for="(color, index) in carColors" :key="color.id" class="p-2 bg-black/20 rounded border border-gray-800/60 space-y-2">
+                            <div class="text-[11px] text-orange-500 font-bold">ຊ່ອງສີທີ {{ index + 1 }}</div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" v-model="color.name" @input="saveData" placeholder="ຊື່ສີ" class="bg-[#1c1e24] border border-gray-700 text-xs text-white rounded p-1 w-full">
+                                <div class="flex gap-1">
+                                    <input type="color" v-model="color.hex" @input="saveData" class="w-7 h-6 bg-transparent border-0 cursor-pointer shrink-0">
+                                    <input type="text" v-model="color.hex" @input="saveData" placeholder="#HEX" class="bg-[#1c1e24] border border-gray-700 text-[11px] text-gray-300 rounded p-1 w-full font-mono">
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-[11px] text-gray-500 shrink-0">ບວກລາຄາ:</span>
+                                <input type="number" v-model.number="color.price" @input="saveData" class="bg-[#1c1e24] border border-gray-700 text-xs text-right text-orange-400 rounded p-0.5 w-24">
+                            </div>
+                            <div class="pt-1 border-t border-gray-800 grid grid-cols-2 gap-1 text-[10px]">
+                                <div>
+                                    <span class="text-gray-500 block">ຮູບເພລດສີ (Swatch):</span>
+                                    <input type="file" @change="uploadSwatchImg($event, color.id)" class="w-full text-gray-600">
+                                </div>
+                                <div>
+                                    <span class="text-gray-500 block">ຮູບລົດຄັນໃຫຍ່:</span>
+                                    <input type="file" @change="uploadColorImg($event, color.id)" class="w-full text-gray-600">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. ອຸປະກອນເສີມແລະສີເບາະ -->
+                <div class="bg-[#111217] p-4 rounded border border-gray-800 space-y-4">
+                    <div>
+                        <span class="text-orange-400 font-semibold block mb-2"><i class="fa-solid fa-couch mr-1"></i> 3. ຕັ້ງຄ່າສີເບາະພາຍໃນ</span>
+                        <div class="space-y-2">
+                            <div v-for="interior in interiorColors" :key="interior.id" class="p-1.5 bg-black/20 rounded border border-gray-800 text-xs space-y-1">
+                                <div class="flex justify-between gap-1">
+                                    <input type="text" v-model="interior.name" @input="saveData" class="bg-[#1c1e24] border-0 text-[11px] text-white p-0.5 w-1/2">
+                                    <input type="number" v-model.number="interior.price" @input="saveData" class="bg-[#1c1e24] border-0 text-[11px] text-right text-orange-400 p-0.5 w-1/2">
+                                </div>
+                                <!-- แก้ไขเพิ่มช่องอัปโหลดรูป Preview ใหญ่สำหรับเบาะภายใน -->
+                                <div class="grid grid-cols-2 gap-1 pt-1 text-[10px]">
+                                    <div>
+                                        <span class="text-gray-500 block">ຮູບຕົວຢ່າງສີ (Swatch):</span>
+                                        <input type="file" @change="uploadInteriorSwatchImg($event, interior.id)" class="w-full text-gray-600">
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500 block">ຮູບພາຍໃນຄັນໃຫຍ່:</span>
+                                        <input type="file" @change="uploadInteriorPreviewImg($event, interior.id)" class="w-full text-gray-600">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t border-gray-800">
+                        <span class="text-orange-400 font-semibold block mb-2"><i class="fa-solid fa-circle-dot mr-1"></i> 4. ຕົວເລືອກລໍ້ ແລະ ກະຈັງໜ້າ</span>
+                        <div class="space-y-2 text-[11px]">
+                            <div v-for="wheel in customOptions.wheels" :key="wheel.id" class="space-y-1 bg-black/20 p-1.5 rounded">
+                                <div class="flex justify-between gap-1">
+                                    <input type="text" v-model="wheel.name" @input="saveData" class="bg-[#1c1e24] text-white p-0.5 w-1/2 border-0">
+                                    <input type="number" v-model.number="wheel.price" @input="saveData" class="bg-[#1c1e24] text-orange-400 text-right p-0.5 w-1/2 border-0">
+                                </div>
+                                <input type="file" @change="uploadWheelImg($event, wheel.id)" class="w-full text-gray-600">
+                            </div>
+                            <div v-for="grille in customOptions.grilles" :key="grille.id" class="space-y-1 bg-black/20 p-1.5 rounded mt-2">
+                                <div class="flex justify-between gap-1">
+                                    <input type="text" v-model="grille.name" @input="saveData" class="bg-[#1c1e24] text-white p-0.5 w-1/2 border-0">
+                                    <input type="number" v-model.number="grille.price" @input="saveData" class="bg-[#1c1e24] text-orange-400 text-right p-0.5 w-1/2 border-0">
+                                </div>
+                                <input type="file" @change="uploadGrilleImg($event, grille.id)" class="w-full text-gray-600">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ຄວາມຄືບໜ້າ (Progress Bar) -->
+        <div class="max-w-[1600px] mx-auto px-6 mt-4">
+            <div class="flex items-center gap-4 bg-[#14161d] p-3 rounded-lg border border-gray-800 overflow-x-auto">
+                <button @click="currentStep = 1" :class="['px-4 py-2 rounded text-xs font-bold transition flex items-center gap-2 shrink-0', currentStep === 1 ? 'bg-orange-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white']">
+                    <span class="w-5 h-5 bg-black/30 rounded-full flex items-center justify-center">1</span> ເລືອກລຸ້ນ, ເກຣດ ແລະ ສີພາຍນອກ
+                </button>
+                <div class="text-gray-600 text-xs shrink-0"><i class="fa-solid fa-chevron-right"></i></div>
+                <button @click="currentStep = 2" :class="['px-4 py-2 rounded text-xs font-bold transition flex items-center gap-2 shrink-0', currentStep === 2 ? 'bg-orange-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white']">
+                    <span class="w-5 h-5 bg-black/30 rounded-full flex items-center justify-center">2</span> ໄລຍະທາງວິ່ງໄຟຟ້າ (ກມ)
+                </button>
+                <div class="text-gray-600 text-xs shrink-0"><i class="fa-solid fa-chevron-right"></i></div>
+                <button @click="currentStep = 3" :class="['px-4 py-2 rounded text-xs font-bold transition flex items-center gap-2 shrink-0', currentStep === 3 ? 'bg-orange-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white']">
+                    <span class="w-5 h-5 bg-black/30 rounded-full flex items-center justify-center">3</span> ປັບແຕ່ງສີເບາະ ແລະ ຕົວເລືອກເສີມ
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Layout -->
+        <main class="max-w-[1600px] mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- [ฝั่งซ้าย]: Live Ultra Preview -->
+            <div class="lg:col-span-5 xl:col-span-6 hero-preview-box w-full flex flex-col justify-between bg-[#14161d] p-6 rounded-xl border border-gray-800 shadow-2xl">
+                <div>
+                    <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4">
+                        <h4 class="text-white font-bold text-sm tracking-wide uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-eye text-orange-500"></i> 
+                            <!-- ปรับหัวข้อตามโหมดที่กำลังพรีวิวอยู่ -->
+                            <span v-if="currentStep === 3 && selectedInterior && selectedInterior.interiorImg"><i class="fa-solid fa-couch text-cyan-400"></i> ຕົວຢ່າງພາຍໃນ (Interior Preview)</span>
+                            <span v-else><i class="fa-solid fa-car text-orange-500"></i> ຈໍສະແດງຜົນຕົວຢ່າງຂະໜາດໃຫຍ່ (Live Ultra Preview)</span>
+                        </h4>
+                        <span class="bg-orange-600/10 text-orange-500 text-[10px] font-bold px-2 py-0.5 rounded border border-orange-500/20">Real-time</span>
+                    </div>
+
+                    <div class="bg-[#0b0c10] rounded-lg border border-gray-800 p-4 flex justify-center items-center overflow-hidden min-h-[260px] md:min-h-[340px] relative group transition-all duration-300">
+                        <!-- แก้ไขตรรกะพรีวิว: ถ้าอยู่หน้า 3 และกดเลือกสีเบาะที่มีรูปใหญ่ ให้สลับภาพเป็นรูปห้องโดยสารทันที -->
+                        <img v-if="currentStep === 3 && selectedInterior && selectedInterior.interiorImg" :src="selectedInterior.interiorImg" class="max-w-full max-h-[320px] object-contain transition-transform duration-500 group-hover:scale-105">
+                        <img v-else-if="selectedColor && selectedColor.carImg" :src="selectedColor.carImg" class="max-w-full max-h-[320px] object-contain transition-transform duration-500 group-hover:scale-105">
+                        <img v-else-if="selectedCar && selectedCar.image" :src="selectedCar.image" class="max-w-full max-h-[320px] object-contain opacity-70">
+                        <div v-else class="text-center text-gray-600 py-12">
+                            <i class="fa-solid fa-car-side text-6xl mb-2 text-gray-800"></i>
+                            <p class="text-xs">ຍັງບໍ່ມີການອັບໂຫຼດຮູບພາບລົດໃຫຍ່</p>
+                            <p class="text-[10px] text-gray-500 mt-1">ທ່ານສາມາດອັບໂຫຼດຮູບລົດຕາມສີໄດ້ທີ່ "ແຜງຕັ້ງຄ່າຫຼັງບ້ານ"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- แถบสรุปสถานะ -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 bg-[#0d0e12] border border-gray-800 p-3 rounded-lg text-[11px] mt-4">
+                    <div class="border-r border-gray-800/60 last:border-0 pr-1">
+                        <span class="text-gray-500 block">ລຸ້ນລົດ:</span>
+                        <span class="text-white font-bold truncate block">{{ selectedCar ? selectedCar.name : '' }}</span>
+                    </div>
+                    <div class="border-r border-gray-800/60 last:border-0 pr-1 pl-1">
+                        <span class="text-gray-500 block">ສີພາຍນອກ:</span>
+                        <span class="text-orange-400 font-bold truncate block flex items-center gap-1">
+                            <span :style="{ backgroundColor: selectedColor ? selectedColor.hex : 'transparent' }" class="w-2 h-2 rounded-full inline-block"></span>
+                            {{ selectedColor ? selectedColor.name : 'ບໍ່ມີຊື່ສີ' }}
+                        </span>
+                    </div>
+                    <div class="border-r border-gray-800/60 last:border-0 pr-1 pl-1">
+                        <span class="text-gray-500 block">ເບາະພາຍໃນ:</span>
+                        <span class="text-cyan-400 font-bold truncate block">{{ selectedInterior ? selectedInterior.name : '' }}</span>
+                    </div>
+                    <div class="pl-1">
+                        <span class="text-gray-500 block">ລໍ້ແມັກ:</span>
+                        <span class="text-gray-300 font-bold truncate block">{{ selectedOptions.wheel ? selectedOptions.wheel.name : '' }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- [ฝั่งขวา]: เมนูการเลือกสเปก -->
+            <div class="lg:col-span-7 xl:col-span-6 space-y-6">
+
+                <!-- [ໜ້າທີ 1] -->
+                <div v-if="currentStep === 1" class="space-y-6">
+                    <!-- 1. ຂໍ້ມູນຜູ້ຈອງ -->
+                    <section class="bg-[#14161d] p-5 rounded-lg border border-gray-800">
+                        <h3 class="text-orange-500 font-bold text-base border-b border-gray-800 pb-2 mb-4">1. 👑 👑 ຂໍ້ມູນຜູ້ຈອງ</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <label class="block text-gray-400 mb-1">ຊື່ ແລະ ນາມສະກຸນ</label>
+                                <input type="text" v-model="customer.name" placeholder="ກະລຸນາປ້ອນຊື່-ນາມສະກຸນ" class="w-full bg-[#1c1e24] border border-gray-700 rounded p-2 text-white focus:outline-none focus:border-orange-500">
+                            </div>
+                            <div>
+                                <label class="block text-gray-400 mb-1">ເບີໂທລະສັບ</label>
+                                <input type="tel" v-model="customer.phone" placeholder="ກະລຸນາປ້ອນເບີໂທລະສັບ" class="w-full bg-[#1c1e24] border border-gray-700 rounded p-2 text-white focus:outline-none focus:border-orange-500">
+                            </div>
+                            <div>
+                                <label class="block text-gray-400 mb-1">ວັນທີຈອງ</label>
+                                <input type="date" v-model="customer.date" class="w-full bg-[#1c1e24] border border-gray-700 rounded p-2 text-white focus:outline-none focus:border-orange-500">
+                            </div>
+                            <div>
+                                <label class="block text-gray-400 mb-1">ຮູບບັດປະຈຳຕົວ / ພາສປອດ</label>
+                                <input type="file" @change="uploadIdCard" accept="image/*" class="w-full text-xs text-gray-500 file:bg-orange-600 file:text-white file:border-0 file:py-1 file:px-2 file:rounded file:mr-2 cursor-pointer bg-[#1c1e24] border border-gray-700 rounded p-1">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 2. ເລືອກລຸ້ນລົດ -->
+                    <section class="bg-[#14161d] p-5 rounded-lg border border-gray-800">
+                        <h3 class="text-orange-500 font-bold text-base border-b border-gray-800 pb-2 mb-4">2. ເລືອກລຸ້ນລົດ (Car Model)</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5">
+                            <div v-for="car in cars" :key="car.id" @click="selectCar(car)"
+                                 :class="['border p-2 rounded-lg text-center cursor-pointer transition relative flex flex-col justify-between items-center', selectedCar && selectedCar.id === car.id ? 'border-orange-500 bg-[#1c1e24]' : 'border-gray-800 bg-[#14161d] hover:border-gray-700']">
+                                <div class="w-full h-14 flex items-center justify-center bg-[#0d0e12] rounded mb-1 overflow-hidden">
+                                    <img v-if="car.image" :src="car.image" class="w-full h-full object-contain p-1">
+                                    <span v-else class="text-[9px] text-gray-600 font-mono">[ ບໍ່ມີຮູບ ]</span>
+                                </div>
+                                <div class="w-full">
+                                    <div class="font-bold text-[11px] text-white truncate">{{ car.name }}</div>
+                                    <div class="text-[10px] text-orange-400 font-bold mt-0.5">{{ formatPrice(car.basePrice) }} ฿</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 3. ເລືອກສີພາຍນອກ -->
+                    <section class="bg-[#14161d] p-5 rounded-lg border border-gray-800">
+                        <div class="flex justify-between items-center border-b border-gray-800 pb-2 mb-3">
+                            <h3 class="text-orange-500 font-bold text-base">3. ເລືອກສີພາຍນອກ (Exterior Color)</h3>
+                        </div>
+                        <div class="flex flex-col gap-2.5">
+                            <div v-for="color in carColors" :key="color.id" @click="selectedColor = color" 
+                                 :class="['p-3 rounded border cursor-pointer transition space-y-2', selectedColor && selectedColor.id === color.id ? 'border-orange-500 bg-[#1c1e24]' : 'border-gray-800 bg-[#14161d] hover:border-gray-700']">
+                                
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-3 truncate">
+                                        <div :style="{ backgroundColor: color.hex }" class="w-6 h-6 rounded-full border border-gray-600 shrink-0 shadow-md"></div>
+                                        
+                                        <div class="w-8 h-8 bg-gray-900 rounded border border-gray-700 overflow-hidden shrink-0 flex items-center justify-center">
+                                            <img v-if="color.swatchImg" :src="color.swatchImg" class="w-full h-full object-cover">
+                                            <i v-else class="fa-solid fa-palette text-xs text-gray-700"></i>
+                                        </div>
+
+                                        <span class="text-xs text-white font-bold truncate">{{ color.name || '(ຍັງບໍ່ມີຊື່ສີ)' }}</span>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <span class="text-xs text-orange-400 font-bold">+{{ formatPrice(color.price) }} ฿</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 4. ເລືອກເກຣດລົດ -->
+                    <section class="bg-[#14161d] p-5 rounded-lg border border-gray-800">
+                        <h3 class="text-orange-500 font-bold text-base border-b border-gray-800 pb-2 mb-4">4. ເລືອກເກຣດລົດ (Trim Level)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div v-for="trim in trims" :key="trim.id" @click="selectedTrim = trim"
+                                 :class="['border p-3 rounded-lg cursor-pointer transition flex flex-col justify-between gap-2', selectedTrim && selectedTrim.id === trim.id ? 'border-orange-500 bg-[#1c1e24]' : 'border-gray-800 bg-[#14161d] hover:border-gray-700']">
+                                <div class="space-y-1">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-white font-bold text-xs">{{ trim.name }}</span>
+                                        <span class="text-[11px] text-orange-400 font-bold">+{{ formatPrice(trim.price) }}</span>
+                                    </div>
+                                    <p class="text-[11px] text-gray-400 line-clamp-2 leading-tight">{{ trim.desc }}</p>
+                                </div>
+                                <div class="text-[10px] text-gray-500 bg-black/40 p-1 rounded text-center">
+                                    {{ trim.batterySize }} kWh | {{ trim.voltage }}
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="flex justify-end">
+                        <button @click="currentStep = 2" class="bg-orange-600 hover:bg-orange-700 text-white font-bold px-6 py-2.5 rounded text-sm flex items-center gap-2 transition">
+                            ຂັ້ນຕອນຕໍ່ໄປ (ໄລຍະທາງວິ່ງ) <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- [ຂັ້ນຕອນທີ 2] -->
+                <div v-if="currentStep === 2" class="space-y-6">
+                    <section class="bg-[#14161d] p-6 rounded-lg border border-gray-800">
+                        <div class="text-center mb-6">
+                            <div class="w-14 h-14 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center mx-auto text-xl mb-2">
+                                <i class="fa-solid fa-bolt"></i>
+                            </div>
+                            <h3 class="text-white font-bold text-base">ກຳນົດໄລຍະທາງການວິ່ງດ້ວຍລະບົບໄຟຟ້າ</h3>
+                        </div>
+
+                        <div class="bg-[#0d0e12] p-5 rounded-lg border border-gray-800">
+                            <label class="block text-xs font-semibold text-gray-300 mb-2">ກຳນົດໄລຍະທາງວິ່ງໄຟຟ້າ (ກິໂລແມັດ - km):</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <input type="number" v-model.number="electricRange" @input="saveData" placeholder="ຕົວຢ່າງ: 620" class="w-full bg-[#1c1e24] border border-gray-700 rounded p-3 text-white text-lg font-bold focus:outline-none focus:border-orange-500 pr-16">
+                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                                    <span class="text-gray-400 font-bold text-xs">km</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="flex justify-between">
+                        <button @click="currentStep = 1" class="bg-gray-800 hover:bg-gray-700 text-white font-bold px-5 py-2 rounded text-sm flex items-center gap-2 transition">
+                            <i class="fa-solid fa-arrow-left"></i> ຍ້ອນກັບ
+                        </button>
+                        <button @click="currentStep = 3" class="bg-orange-600 hover:bg-orange-700 text-white font-bold px-6 py-2 rounded text-sm flex items-center gap-2 transition">
+                            ຂັ້ນຕອນຕໍ່ໄປ (ປັບແຕ່ງຕົວເລືອກ) <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- [ໜ້າທີ 3] -->
+                <div v-if="currentStep === 3" class="space-y-6">
+                    <!-- ສີເเบາະພາຍໃນ -->
+                    <section class="bg-[#14161d] p-5 rounded-lg border border-gray-800">
+                        <h3 class="text-orange-500 font-bold text-base border-b border-gray-800 pb-2 mb-3">ເລືອກສີເບາະພາຍໃນ (Interior Color)</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div v-for="interior in interiorColors" :key="interior.id" @click="selectedInterior = interior" 
+                                 :class="['p-3 rounded-lg border cursor-pointer transition flex flex-col justify-between items-center text-center', selectedInterior && selectedInterior.id === interior.id ? 'border-orange-500 bg-[#1c1e24]' : 'border-gray-800 bg-[#14161d] hover:border-gray-700']">
+                                <div class="w-full flex justify-center items-center gap-2 mb-2">
+                                    <div :style="{ background: interior.hex }" class="w-4 h-4 rounded border border-gray-600 shrink-0"></div>
+                                    <div class="w-10 h-10 bg-gray-900 rounded border border-gray-700 overflow-hidden shrink-0 flex items-center justify-center shadow-inner">
+                                        <img v-if="interior.swatchImg" :src="interior.swatchImg" class="w-full h-full object-cover">
+                                        <i class="fa-solid fa-couch text-xs text-gray-700"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="text-xs text-white font-bold block truncate">{{ interior.name }}</span>
+                                    <span class="text-[11px] text-orange-400 block font-medium mt-0.5">+{{ formatPrice(interior.price) }} ฿</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ລໍ້ແມັກ ແລະ ກະຈັງໜ້າ -->
+                    <section class="bg-[#14161d] p-5 rounded-lg border border-gray-800 space-y-5">
+                        <h3 class="text-orange-500 font-bold text-base border-b border-gray-800 pb-2">💡 ປັບແຕ່ງອຸປະກອນເສີມພາຍນອກ</h3>
+                        
+                        <div>
+                            <h4 class="text-xs font-semibold text-gray-400 mb-2"><i class="fa-solid fa-circle-dot text-[11px] mr-1 text-orange-500"></i> ລໍ້ແມັກ (Wheels Option)</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div v-for="wheel in customOptions.wheels" :key="wheel.id" @click="selectedOptions.wheel = wheel"
+                                     :class="['border p-3 rounded-lg text-center cursor-pointer transition flex items-center gap-3', selectedOptions.wheel && selectedOptions.wheel.id === wheel.id ? 'border-orange-500 bg-[#1c1e24]' : 'border-gray-800 hover:border-gray-700']">
+                                    <div class="w-12 h-12 bg-[#0d0e12] rounded-full overflow-hidden flex items-center justify-center border border-gray-800 shrink-0">
+                                        <img v-if="wheel.image" :src="wheel.image" class="w-full h-full object-cover">
+                                        <i v-else class="fa-solid fa-circle-notch text-gray-700 text-lg"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <div class="text-xs font-bold text-white truncate">{{ wheel.name }}</div>
+                                        <div class="text-[11px] text-orange-400 font-bold">+{{ formatPrice(wheel.price) }} ฿</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-xs font-semibold text-gray-400 mb-2"><i class="fa-solid fa-grip-lines text-[11px] mr-1 text-orange-500"></i> ກະຈັງໜ້າ (Grilles Option)</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div v-for="grille in customOptions.grilles" :key="grille.id" @click="selectedOptions.grille = grille"
+                                     :class="['border p-3 rounded-lg text-center cursor-pointer transition flex items-center gap-3', selectedOptions.grille && selectedOptions.grille.id === grille.id ? 'border-orange-500 bg-[#1c1e24]' : 'border-gray-800 hover:border-gray-700']">
+                                    <div class="w-14 h-9 bg-[#0d0e12] rounded overflow-hidden flex items-center justify-center border border-gray-800 shrink-0">
+                                        <img v-if="grille.image" :src="grille.image" class="w-full h-full object-cover">
+                                        <i v-else class="fa-solid fa-bars text-gray-700 text-sm"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <div class="text-xs font-bold text-white truncate">{{ grille.name }}</div>
+                                        <div class="text-[11px] text-orange-400 font-bold">+{{ formatPrice(grille.price) }} ฿</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="flex justify-start">
+                        <button @click="currentStep = 2" class="bg-gray-800 hover:bg-gray-700 text-white font-bold px-5 py-2 rounded text-sm flex items-center gap-2 transition">
+                            <i class="fa-solid fa-arrow-left"></i> ຍ້ອນກັບ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ສະຫຼຸບລາຄາລວມ -->
+                <aside class="bg-[#14161d] p-5 rounded-lg border border-gray-800 space-y-4">
+                    <h3 class="text-orange-500 font-bold text-base border-b border-gray-800 pb-2">ສະຫຼຸບລາຍການ ແລະ ລາຄາລວມທັງໝົດ</h3>
+                    
+                    <div class="space-y-2.5 text-xs border-b border-dashed border-gray-800 pb-4">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">ລຸ້ນລົດ ({{ selectedCar ? selectedCar.name : '' }})</span>
+                            <span class="text-white font-medium">{{ selectedCar ? formatPrice(selectedCar.basePrice) : 0 }} ฿</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">ເກຣດລົດ ({{ selectedTrim ? selectedTrim.name : '' }})</span>
+                            <span class="text-white font-medium">+{{ selectedTrim ? formatPrice(selectedTrim.price) : 0 }} ฿</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">ສີພາຍນອກ ({{ selectedColor ? selectedColor.name : 'ບໍ່ລະບຸ' }})</span>
+                            <span class="text-white font-medium">+{{ selectedColor ? formatPrice(selectedColor.price) : 0 }} ฿</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">ສີເບາະພາຍໃນ ({{ selectedInterior ? selectedInterior.name : '' }})</span>
+                            <span class="text-white font-medium">+{{ selectedInterior ? formatPrice(selectedInterior.price) : 0 }} ฿</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">ລໍ້ແມັກ ({{ selectedOptions.wheel ? selectedOptions.wheel.name : '' }})</span>
+                            <span class="text-white font-medium">+{{ selectedOptions.wheel ? formatPrice(selectedOptions.wheel.price) : 0 }} ฿</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">ກະຈັງໜ້າ ({{ selectedOptions.grille ? selectedOptions.grille.name : '' }})</span>
+                            <span class="text-white font-medium">+{{ selectedOptions.grille ? formatPrice(selectedOptions.grille.price) : 0 }} ฿</span>
+                        </div>
+                        <div class="flex justify-between bg-black/40 p-2 rounded text-xs border border-gray-800 font-bold text-orange-400">
+                            <span>|ໄລຍະທາງວິ່ງໄຟຟ້າສູງສຸດ:</span>
+                            <span>{{ electricRange || 0 }} km</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-baseline">
+                        <span class="text-white font-bold text-sm">ລາຄາລວມສຸດທິ</span>
+                        <div class="text-right">
+                            <span class="text-orange-500 font-black text-2xl">{{ formatPrice(totalPrice) }}</span>
+                            <span class="text-orange-500 text-xs block">ບາດ (THB)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-2">
+                        <button @click="generatePDF" class="w-full bg-[#e05a00] hover:bg-orange-600 text-white font-bold py-3 rounded flex justify-center items-center gap-2 transition shadow-lg shadow-orange-500/10">
+                            <i class="fa-solid fa-file-pdf"></i> ດາວໂຫຼດໃບສະຫຼຸບ PDF
+                        </button>
+                    </div>
+                </aside>
+            </div>
+        </main>
+
+        <!-- Template PDF -->
+        <div id="pdf-template" class="hidden">
+            <div style="padding: 35px; font-family: 'Noto Sans Lao', sans-serif; color: #1a1a1a; background-color: #ffffff; max-w: 800px; margin: 0 auto;">
+                <div style="display: flex; justify-content: space-between; border-b: 3px solid #1a1a1a; padding-bottom: 15px; margin-bottom: 25px;">
+                    <div>
+                        <h1 style="font-size: 26px; font-weight: 700; color: #000; margin: 0; letter-spacing: 2px;">ZEEKR CONFIGURATOR</h1>
+                        <p style="font-size: 11px; color: #666; margin: 5px 0 0 0;">ໃບສະຫຼຸບລາຍລະອຽດການເລືອກ ແລະ ປັບແຕ່ງລົດ</p>
+                    </div>
+                </div>
+
+                <div style="background-color: #f8f9fa; border-left: 4px solid #e05a00; padding: 12px; margin-bottom: 20px; border-radius: 4px;">
+                    <h3 style="margin: 0 0 6px 0; font-size: 13px; color: #e05a00; font-weight: bold;"><b>👑 👑 ຂໍ້ມູນຜູ້ຈອງລົດ</b></h3>
+                    <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+                        <tr>
+                            <td style="width: 15%; color: #666; padding: 2px 0;">ຊື່ຜູ້ຈອງ:</td>
+                            <td style="width: 45%; font-weight: bold; color: #111;">{{ customer.name || 'ບໍ່ໄດ້ລະບຸ' }}</td>
+                            <td style="width: 15%; color: #666; padding: 2px 0;">ວັນທີອອກໃບບິນ:</td>
+                            <td style="width: 25%; font-weight: bold; color: #111;">{{ customer.date }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #666; padding: 2px 0;">ເບີໂທລະສັບ:</td>
+                            <td style="font-weight: bold; color: #111;">{{ customer.phone || 'ບໍ່ໄດ້ລະບຸ' }}</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- ปรับให้รูปใน PDF เป็นรูปสีเบาะหากกดเลือกที่หน้า 3 -->
+                <div v-if="currentStep === 3 && selectedInterior && selectedInterior.interiorImg" style="text-align: center; margin-bottom: 20px; background-color: #fafafa; border: 1px solid #eee; padding: 10px; border-radius: 6px;">
+                    <img :src="selectedInterior.interiorImg" style="max-width: 100%; max-height: 200px; object-fit: contain;">
+                </div>
+                <div v-else-if="selectedColor && selectedColor.carImg" style="text-align: center; margin-bottom: 20px; background-color: #fafafa; border: 1px solid #eee; padding: 10px; border-radius: 6px;">
+                    <img :src="selectedColor.carImg" style="max-width: 100%; max-height: 200px; object-fit: contain;">
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 25px;">
+                    <thead>
+                        <tr style="background-color: #1a1a1a; color: #ffffff; text-align: left;">
+                            <th style="padding: 8px 12px;">ໝວດໝູ່</th>
+                            <th style="padding: 8px 12px;">ລາຍການຕົວເລືອກທີ່ເລືອກ</th>
+                            <th style="padding: 8px 12px; text-align: right;">ລາຄາ (ບາດ)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 10px 12px; font-weight: bold;">ລຸ້ນລົດ (Car Model)</td>
+                            <td style="padding: 10px 12px; color: #444;">{{ selectedCar ? selectedCar.name : '' }}</td>
+                            <td style="padding: 10px 12px; text-align: right; font-weight: bold;">{{ selectedCar ? formatPrice(selectedCar.basePrice) : 0 }}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 10px 12px; font-weight: bold;">ເກຣດລົດ (Trim Level)</td>
+                            <td style="padding: 10px 12px; color: #444;">{{ selectedTrim ? selectedTrim.name : '' }} <span v-if="selectedTrim">({{ selectedTrim.drive }})</span></td>
+                            <td style="padding: 10px 12px; text-align: right;">+{{ selectedTrim ? formatPrice(selectedTrim.price) : 0 }}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 10px 12px; font-weight: bold;">| ໄລຍະທາງວິ່ງໄຟຟ້າ</td>
+                            <td style="padding: 10px 12px; color: #111; font-weight: bold;">{{ electricRange || 0 }} km</td>
+                            <td style="padding: 10px 12px; text-align: right; color: #888;">[ລວມໃນເກຣດ]</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 10px 12px; font-weight: bold;">Sີພາຍນອກ (Exterior Color)</td>
+                            <td style="padding: 10px 12px; color: #444;">{{ selectedColor ? selectedColor.name : 'ບໍ່ລະບຸ' }}</td>
+                            <td style="padding: 10px 12px; text-align: right;">+{{ selectedColor ? formatPrice(selectedColor.price) : 0 }}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 10px 12px; font-weight: bold;">ສີເບາະພາຍໃນ (Interior Color)</td>
+                            <td style="padding: 10px 12px; color: #444;">{{ selectedInterior ? selectedInterior.name : '' }}</td>
+                            <td style="padding: 10px 12px; text-align: right;">+{{ selectedInterior ? formatPrice(selectedInterior.price) : 0 }}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 10px 12px; font-weight: bold;">ລໍ້ແມັກ (Custom Wheels)</td>
+                            <td style="padding: 10px 12px; color: #444;">{{ selectedOptions.wheel ? selectedOptions.wheel.name : '' }}</td>
+                            <td style="padding: 10px 12px; text-align: right;">+{{ selectedOptions.wheel ? formatPrice(selectedOptions.wheel.price) : 0 }}</td>
+                        </tr>
+                        <tr style="border-bottom: 2px solid #1a1a1a;">
+                            <td style="padding: 10px 12px; font-weight: bold;">...ກະຈັງໜ້າ (Front Grille)</td>
+                            <td style="padding: 10px 12px; color: #444;">{{ selectedOptions.grille ? selectedOptions.grille.name : '' }}</td>
+                            <td style="padding: 10px 12px; text-align: right;">+{{ selectedOptions.grille ? formatPrice(selectedOptions.grille.price) : 0 }}</td>
+                        </tr>
+                        <tr style="background-color: #fdf5f0;">
+                            <td colspan="2" style="padding: 12px; font-size: 13px; font-weight: bold; text-align: right; color: #1a1a1a;">ລາຄາລວມທັງໝົດສຸດທິ:</td>
+                            <td style="padding: 12px; font-size: 16px; font-weight: 800; text-align: right; color: #e05a00;">{{ formatPrice(totalPrice) }} ບາດ</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div v-if="customer.idCardImg" style="margin-bottom: 30px; border-top: 1px dashed #ccc; padding-top: 15px;">
+                    <h4 style="font-size: 11px; color: #555; margin: 0 0 8px 0; font-weight: bold;">ສຳເນົາບັດປະຈຳຕົວ / ພາສປອດ ແນບທ້າຍ:</h4>
+                    <div style="background-color: #fafafa; border: 1px solid #ddd; padding: 6px; display: inline-block; border-radius: 4px;">
+                        <img :src="customer.idCardImg" style="max-height: 120px; width: auto; object-fit: contain;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const showAdmin = ref(false);
+                const currentStep = ref(1); 
+
+                const customer = ref({
+                    name: '', phone: '', date: new Date().toISOString().split('T')[0], idCardImg: null 
+                });
+
+                const electricRange = ref(600);
+
+                const defaultCars = [
+                    { id: 1, name: 'ZEEKR 001', basePrice: 1650000, image: null },
+                    { id: 2, name: 'ZEEKR 009', basePrice: 3250000, image: null },
+                    { id: 3, name: 'ZEEKR 7X', basePrice: 1550000, image: null },
+                    { id: 4, name: 'ZEEKR 8X', basePrice: 1790000, image: null },
+                    { id: 5, name: 'ZEEKR 9X', basePrice: 2190000, image: null }
+                ];
+                
+                const defaultColors = [
+                    { id: 1, name: 'ສີດຳ Premium Black', hex: '#000000', price: 0, carImg: null, swatchImg: null },
+                    { id: 2, name: 'Sunkist Orange', hex: '#e65100', price: 15000, carImg: null, swatchImg: null },
+                    { id: 3, name: 'Polar White', hex: '#ffffff', price: 0, carImg: null, swatchImg: null },
+                    { id: 4, name: 'Electric Blue', hex: '#00d2ff', price: 20000, carImg: null, swatchImg: null },
+                    { id: 5, name: 'Matte Gray', hex: '#555555', price: 35000, carImg: null, swatchImg: null }
+                ];
+
+                const defaultInteriors = [
+                    { id: 1, name: 'ສີດຳ Charcoal Black', hex: '#1c1c1c', price: 0, swatchImg: null, interiorImg: null },
+                    { id: 2, name: 'ສີຄຣີມ Amber Beige', hex: '#f5edd6', price: 10000, swatchImg: null, interiorImg: null },
+                    { id: 3, name: 'ສີຟ້າ Monaco Blue', hex: '#1e3a8a', price: 25000, swatchImg: null, interiorImg: null }
+                ];
+
+                const defaultOptions = {
+                    wheels: [
+                        { id: 1, name: 'ລໍ້ມາດຕະຖານ 19"', price: 0, image: null },
+                        { id: 2, name: 'Sport Blade 21"', price: 30000, image: null }
+                    ],
+                    grilles: [
+                        { id: 1, name: 'ກະຈັງໜ້າມາດຕະຖານ', price: 0, image: null },
+                        { id: 2, name: 'Dark Chrome Sport', price: 20000, image: null }
+                    ]
+                };
+
+                const cars = ref([]);
+                const carColors = ref([...defaultColors]);
+                const interiorColors = ref([...defaultInteriors]);
+                const customOptions = ref(JSON.parse(JSON.stringify(defaultOptions)));
+
+                const selectedCar = ref(null);
+                const selectedColor = ref(null);
+                const selectedInterior = ref(null);
+
+                const trims = ref([
+                    { id: 1, name: 'Standard RWD', price: 0, drive: 'ມໍເຕີດ່ຽວ ຂັບເຄື່ອນລໍ້ຫຼັງ', desc: 'ເນັ້ນຄວາມຄຸ້ມຄ່າ ແບັດເຕີຣີມາດຕະຖານ', batterySize: 75, voltage: '800V' },
+                    { id: 2, name: 'Long Range RWD', price: 150000, drive: 'ມໍເຕີດ່ຽວ ແບັດເຕີຣີໃຫຍ່ພິເສດ', desc: 'ເນັ້ນໄລຍະທາງວິ່ງໄກພິເສດ', batterySize: 100, voltage: '800V' },
+                    { id: 3, name: 'Performance AWD', price: 350000, drive: 'ມໍເຕີຄູ່ ຂັບເຄື່ອນ 4 ລໍ້', desc: 'ເນັ້ນຄວາມແຮງ ອັດຕາເລັ່ງສູງສຸດ', batterySize: 100, voltage: '900V' }
+                ]);
+                const selectedTrim = ref(trims.value[0]);
+
+                const selectedOptions = ref({
+                    wheel: null,
+                    grille: null
+                });
+
+                const saveData = () => {
+                    const dataToSave = {
+                        cars: cars.value,
+                        carColors: carColors.value,
+                        interiorColors: interiorColors.value,
+                        customOptions: customOptions.value,
+                        electricRange: electricRange.value
+                    };
+                    localStorage.setItem('zeekr_config_data', JSON.stringify(dataToSave));
+                };
+
+                const addNewCar = () => {
+                    const newId = cars.value.length > 0 ? Math.max(...cars.value.map(c => c.id)) + 1 : 1;
+                    cars.value.push({
+                        id: newId,
+                        name: 'ລຸ້ນລົດໃໝ່ ZEEKR',
+                        basePrice: 1500000,
+                        image: null
+                    });
+                    saveData();
+                };
+
+                const deleteCar = (id) => {
+                    if (cars.value.length <= 1) {
+                        alert("ບໍ່ສາມາດລຶບໄດ້! ລະບົບຈຳເປັນຕ້ອງມີລຸ້ນລົດຢ່າງໜ້ອຍ 1 ລຸ້ນ.");
+                        return;
+                    }
+                    if (confirm("ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການລຶບລຸ້ນລົດນີ້ອອກຈາກລະບົບ?")) {
+                        cars.value = cars.value.filter(c => c.id !== id);
+                        if (selectedCar.value && selectedCar.value.id === id) {
+                            selectedCar.value = cars.value[0];
+                        }
+                        saveData();
+                    }
+                };
+
+                onMounted(() => {
+                    const savedData = localStorage.getItem('zeekr_config_data');
+                    if (savedData) {
+                        try {
+                            const parsed = JSON.parse(savedData);
+                            if (parsed.cars && parsed.cars.length > 0) {
+                                cars.value = parsed.cars;
+                            } else {
+                                cars.value = [...defaultCars];
+                            }
+                            if (parsed.carColors) carColors.value = parsed.carColors;
+                            if (parsed.interiorColors) interiorColors.value = parsed.interiorColors;
+                            if (parsed.customOptions) customOptions.value = parsed.customOptions;
+                            if (parsed.electricRange) electricRange.value = parsed.electricRange;
+                        } catch (e) {
+                            console.error("Error loading saved data", e);
+                        }
+                    } else {
+                        cars.value = [...defaultCars];
+                    }
+                    
+                    if (cars.value.length > 0) selectedCar.value = cars.value[0];
+                    selectedColor.value = carColors.value[0];
+                    selectedInterior.value = interiorColors.value[0];
+                    selectedOptions.value.wheel = customOptions.value.wheels[0];
+                    selectedOptions.value.grille = customOptions.value.grilles[0];
+                });
+
+                const resetToDefault = () => {
+                    if (confirm("ທ່ານຕ້ອງການລ້າງຂໍ້ມູນການຕັ້ງຄ່າທັງໝົດ ເພື່ອກັບຄືນສູ່ຄ່າເລີ່ມຕົ້ນຂອງລະບົບແມ່ນບໍ່?")) {
+                        localStorage.removeItem('zeekr_config_data');
+                        location.reload();
+                    }
+                };
+
+                const handleImgUpload = (event, callback) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                        if (file.size > 2.5 * 1024 * 1024) {
+                            alert("ไฟล์รูปภาพใหญ่เกินไป! แนะนำไม่เกิน 2MB เพื่อป้องกันหน่วยความจำเต็มครับ");
+                            return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            callback(e.target.result);
+                            saveData(); 
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+
+                const uploadSwatchImg = (event, id) => {
+                    handleImgUpload(event, (base64) => {
+                        const target = carColors.value.find(c => c.id === id);
+                        if (target) target.swatchImg = base64;
+                    });
+                };
+
+                const uploadInteriorSwatchImg = (event, id) => {
+                    handleImgUpload(event, (base64) => {
+                        const target = interiorColors.value.find(i => i.id === id);
+                        if (target) target.swatchImg = base64;
+                    });
+                };
+
+                // ฟังก์ชันเพิ่ม: จัดการอัปโหลดรูปห้องโดยสารคันใหญ่
+                const uploadInteriorPreviewImg = (event, id) => {
+                    handleImgUpload(event, (base64) => {
+                        const target = interiorColors.value.find(i => i.id === id);
+                        if (target) target.interiorImg = base64;
+                    });
+                };
+
+                const uploadIdCard = (event) => {
+                    handleImgUpload(event, (base64) => { customer.value.idCardImg = base64; });
+                };
+
+                const uploadCarImg = (event, id) => {
+                    handleImgUpload(event, (base64) => {
+                        const target = cars.value.find(c => c.id === id);
+                        if (target) target.image = base64;
+                    });
+                };
+
+                const uploadColorImg = (event, id) => {
+                    handleImgUpload(event, (base64) => {
+                        const target = carColors.value.find(c => c.id === id);
+                        if (target) target.carImg = base64;
+                    });
+                };
+
+                const uploadWheelImg = (event, id) => {
+                    handleImgUpload(event, (base64) => {
+                        const target = customOptions.value.wheels.find(w => w.id === id);
+                        if (target) target.image = base64;
+                    });
+                };
+
+                const uploadGrilleImg = (event, id) => {
+                    handleImgUpload(event, (base64) => {
+                        const target = customOptions.value.grilles.find(g => g.id === id);
+                        if (target) target.image = base64;
+                    });
+                };
+
+                const selectCar = (car) => { selectedCar.value = car; };
+                
+                const totalPrice = computed(() => {
+                    if (!selectedCar.value) return 0;
+                    const base = Number(selectedCar.value.basePrice) || 0;
+                    const trimP = selectedTrim.value ? (Number(selectedTrim.value.price) || 0) : 0;
+                    const colorP = selectedColor.value ? (Number(selectedColor.value.price) || 0) : 0;
+                    const interiorP = selectedInterior.value ? (Number(selectedInterior.value.price) || 0) : 0;
+                    const wheelP = (selectedOptions.value.wheel) ? (Number(selectedOptions.value.wheel.price) || 0) : 0;
+                    const grilleP = (selectedOptions.value.grille) ? (Number(selectedOptions.value.grille.price) || 0) : 0;
+                    return base + trimP + colorP + interiorP + wheelP + grilleP;
+                });
+                
+                const formatPrice = (value) => {
+                    return (Number(value) || 0).toLocaleString('th-TH');
+                };
+
+                const generatePDF = () => {
+                    const element = document.getElementById('pdf-template');
+                    element.classList.remove('hidden');
+
+                    const opt = {
+                        margin:       [8, 8, 8, 8],
+                        filename:     `ZEEKR_Booking_${customer.value.name || 'Customer'}.pdf`,
+                        image:        { type: 'jpeg', quality: 0.95 },
+                        html2canvas:  { scale: 2, useCORS: true, logging: false },
+                        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    };
+
+                    html2pdf().set(opt).from(element).save().then(() => {
+                        element.classList.add('hidden');
+                    }).catch(err => {
+                        element.classList.add('hidden');
+                        alert("ເກີດຂໍ້ຜິດພາດໃນການສ້າງ PDF");
+                    });
+                };
+
+                return {
+                    showAdmin, currentStep, customer, electricRange, cars, selectedCar, trims, selectedTrim, carColors, selectedColor, interiorColors, selectedInterior, customOptions, selectedOptions,
+                    uploadIdCard, uploadCarImg, uploadColorImg, uploadWheelImg, uploadGrilleImg, uploadSwatchImg, uploadInteriorSwatchImg, uploadInteriorPreviewImg, selectCar, totalPrice, formatPrice, generatePDF, saveData, resetToDefault, addNewCar, deleteCar
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
